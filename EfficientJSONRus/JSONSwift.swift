@@ -141,7 +141,6 @@ func decodeJSON(data: NSData?) -> JSON? {
 
 func decodeJSON(data: NSData) -> Result<JSON> {
     let jsonOptional: JSON! = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(0), error: nil)
-    println("\(jsonOptional)")
     return resultFromOptional(jsonOptional,
                        NSError(localizedDescription: "исходные данные неверны")) // error from NSJSONSerialization
 }
