@@ -13,6 +13,12 @@
 		E4A630D419FE54D9000F063D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E4A630D319FE54D9000F063D /* Images.xcassets */; };
 		E4A630D719FE54D9000F063D /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = E4A630D519FE54D9000F063D /* LaunchScreen.xib */; };
 		E4A630E319FE54D9000F063D /* EfficientJSONRusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4A630E219FE54D9000F063D /* EfficientJSONRusTests.swift */; };
+		E4CAA3F719FE5833008D4881 /* Blog.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CAA3EC19FE5833008D4881 /* Blog.swift */; };
+		E4CAA3F819FE5833008D4881 /* JSONSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CAA3F219FE5833008D4881 /* JSONSwift.swift */; };
+		E4CAA3F919FE5833008D4881 /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CAA3F319FE5833008D4881 /* Place.swift */; };
+		E4CAA3FA19FE5833008D4881 /* RespondParse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CAA3F419FE5833008D4881 /* RespondParse.swift */; };
+		E4CAA3FB19FE5833008D4881 /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CAA3F519FE5833008D4881 /* Result.swift */; };
+		E4CAA3FC19FE5833008D4881 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CAA3F619FE5833008D4881 /* User.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +42,17 @@
 		E4A630DC19FE54D9000F063D /* EfficientJSONRusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EfficientJSONRusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4A630E119FE54D9000F063D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E4A630E219FE54D9000F063D /* EfficientJSONRusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EfficientJSONRusTests.swift; sourceTree = "<group>"; };
+		E4CAA3EC19FE5833008D4881 /* Blog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Blog.swift; sourceTree = "<group>"; };
+		E4CAA3ED19FE5833008D4881 /* EfficientJSON.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = EfficientJSON.playground; sourceTree = "<group>"; };
+		E4CAA3EE19FE5833008D4881 /* EfficientJSONBLOG.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = EfficientJSONBLOG.playground; sourceTree = "<group>"; };
+		E4CAA3EF19FE5833008D4881 /* EfficientJSONBlogs.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = EfficientJSONBlogs.playground; sourceTree = "<group>"; };
+		E4CAA3F019FE5833008D4881 /* EfficientJSONRealLife.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = EfficientJSONRealLife.playground; sourceTree = "<group>"; };
+		E4CAA3F119FE5833008D4881 /* EffisientJSONEmbeddedANDArrays.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = EffisientJSONEmbeddedANDArrays.playground; sourceTree = "<group>"; };
+		E4CAA3F219FE5833008D4881 /* JSONSwift.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONSwift.swift; sourceTree = "<group>"; };
+		E4CAA3F319FE5833008D4881 /* Place.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
+		E4CAA3F419FE5833008D4881 /* RespondParse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RespondParse.swift; sourceTree = "<group>"; };
+		E4CAA3F519FE5833008D4881 /* Result.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Result.swift; sourceTree = "<group>"; };
+		E4CAA3F619FE5833008D4881 /* User.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,7 +94,11 @@
 		E4A630C919FE54D9000F063D /* EfficientJSONRus */ = {
 			isa = PBXGroup;
 			children = (
-				E4A630CC19FE54D9000F063D /* AppDelegate.swift */,
+				E4CAA3FD19FE583E008D4881 /* Playgrounds */,
+				E4CAA3FE19FE58EA008D4881 /* Models */,
+				E4CAA3F219FE5833008D4881 /* JSONSwift.swift */,
+				E4CAA3F419FE5833008D4881 /* RespondParse.swift */,
+				E4CAA3F519FE5833008D4881 /* Result.swift */,
 				E4A630CE19FE54D9000F063D /* ViewController.swift */,
 				E4A630D019FE54D9000F063D /* Main.storyboard */,
 				E4A630D319FE54D9000F063D /* Images.xcassets */,
@@ -90,6 +111,7 @@
 		E4A630CA19FE54D9000F063D /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				E4A630CC19FE54D9000F063D /* AppDelegate.swift */,
 				E4A630CB19FE54D9000F063D /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -110,6 +132,28 @@
 				E4A630E119FE54D9000F063D /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		E4CAA3FD19FE583E008D4881 /* Playgrounds */ = {
+			isa = PBXGroup;
+			children = (
+				E4CAA3ED19FE5833008D4881 /* EfficientJSON.playground */,
+				E4CAA3EE19FE5833008D4881 /* EfficientJSONBLOG.playground */,
+				E4CAA3EF19FE5833008D4881 /* EfficientJSONBlogs.playground */,
+				E4CAA3F019FE5833008D4881 /* EfficientJSONRealLife.playground */,
+				E4CAA3F119FE5833008D4881 /* EffisientJSONEmbeddedANDArrays.playground */,
+			);
+			name = Playgrounds;
+			sourceTree = "<group>";
+		};
+		E4CAA3FE19FE58EA008D4881 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				E4CAA3EC19FE5833008D4881 /* Blog.swift */,
+				E4CAA3F319FE5833008D4881 /* Place.swift */,
+				E4CAA3F619FE5833008D4881 /* User.swift */,
+			);
+			name = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -212,8 +256,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E4CAA3F719FE5833008D4881 /* Blog.swift in Sources */,
+				E4CAA3F819FE5833008D4881 /* JSONSwift.swift in Sources */,
 				E4A630CF19FE54D9000F063D /* ViewController.swift in Sources */,
+				E4CAA3FA19FE5833008D4881 /* RespondParse.swift in Sources */,
+				E4CAA3FC19FE5833008D4881 /* User.swift in Sources */,
+				E4CAA3FB19FE5833008D4881 /* Result.swift in Sources */,
 				E4A630CD19FE54D9000F063D /* AppDelegate.swift in Sources */,
+				E4CAA3F919FE5833008D4881 /* Place.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -405,6 +455,7 @@
 				E4A630E819FE54D9000F063D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		E4A630E919FE54D9000F063D /* Build configuration list for PBXNativeTarget "EfficientJSONRusTests" */ = {
 			isa = XCConfigurationList;
@@ -413,6 +464,7 @@
 				E4A630EB19FE54D9000F063D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
