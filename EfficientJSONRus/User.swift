@@ -32,6 +32,7 @@ struct User1: JSONDecodable, Printable {
         }
     }
 }
+
 //----------------- МОДЕЛЬ User --------
 
 struct User:  JSONDecodable, Printable {
