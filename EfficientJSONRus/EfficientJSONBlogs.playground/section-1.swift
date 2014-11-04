@@ -15,6 +15,8 @@ let parsedJSON : [String:AnyObject] =
 "name": "Cool User"
 }
 }*/
+// ---------- БУДЬТЕ ВНИМАТЕЛЬНЫ - КОМПИЛИРУЕТСЯ 1.5 -2 минуты--------
+
 
 //------- Исходные правильные данные для парсинга Post -----
 //      ----- Тест 1 - правильные данные  -----
@@ -112,16 +114,26 @@ extension NSError {
 //------------------ Для Result<JSON> -----
 
 func decodeJSON(data: NSData) -> Result<JSON> {
-    let jsonOptional: JSON! = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(0), error: nil)
-    
-    return resultFromOptional(jsonOptional, NSError(localizedDescription: "JSON данные неверны")) // use the error from NSJSONSerialization or a custom error message
+    var jsonErrorOptional: NSError?
+    let jsonOptional: JSON! = NSJSONSerialization.JSONObjectWithData(data,
+                                         options: NSJSONReadingOptions(0),
+                                                error: &jsonErrorOptional)
+    if let err = jsonErrorOptional {
+        return resultFromOptional(jsonOptional,
+            NSError (localizedDescription: err.localizedDescription ))
+    } else {
+        
+        return resultFromOptional(jsonOptional, NSError ())
+    }
 }
 
 //------------------ Для Optionals JSON? -----
 
 func decodeJSON(data: NSData?) -> JSON? {
     var jsonErrorOptional: NSError?
-    let jsonOptional: JSON? = NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions(0), error: &jsonErrorOptional)
+    let jsonOptional: JSON? = NSJSONSerialization.JSONObjectWithData(data!,
+                                          options: NSJSONReadingOptions(0),
+                                                 error: &jsonErrorOptional)
     if let json: JSON = jsonOptional {
         return json
     } else {
@@ -154,11 +166,11 @@ func pure<A>(a: A) -> A? {
 //---------------- Используем Generics -----------
 
 protocol JSONDecodable {
-    class func decode1(json: JSON) -> Self?
+    class func decode(json: JSON) -> Self?
 }
 
 func decodeObject<A: JSONDecodable>(json: JSON) -> Result<A> {
-    return resultFromOptional(A.decode1(json), NSError(localizedDescription: "Отсутствуют компоненты модели")) // custom error
+    return resultFromOptional(A.decode(json), NSError(localizedDescription: "Отсутствуют компоненты модели")) // custom error
 }
 
 func _JSONParse<A>(json: JSON) -> A? {
@@ -166,29 +178,29 @@ func _JSONParse<A>(json: JSON) -> A? {
 }
 
 func _JSONParse<A: JSONDecodable>(json: JSON) -> A? {
-    return A.decode1(json)
+    return A.decode(json)
 }
 
 extension String: JSONDecodable {
-    static func decode1(json: JSON) -> String? {
+    static func decode(json: JSON) -> String? {
         return json as? String
     }
 }
 
 extension Int: JSONDecodable {
-    static func decode1(json: JSON) -> Int? {
+    static func decode(json: JSON) -> Int? {
         return json as? Int
     }
 }
 
 extension Double: JSONDecodable {
-    static func decode1(json: JSON) -> Double? {
+    static func decode(json: JSON) -> Double? {
         return json as? Double
     }
 }
 
 extension Bool: JSONDecodable {
-    static func decode1(json: JSON) -> Bool? {
+    static func decode(json: JSON) -> Bool? {
         return json as? Bool
     }
 }
@@ -221,23 +233,23 @@ func <|*<A: JSONDecodable>(d: JSONObject, key: String) -> A?? {
 
 /*
 let parsedJSON : [String:AnyObject] = [
-"stat": "ok",
-"blogs": [
-"blog": [
-[
-"id" : 73,
-"name" : "Bloxus test",
-"needspassword" : true,
-"url" : "http://remote.bloxus.com/"
-],
-[
-"id" : 74,
-"name" : "Manila Test",
-"needspassword" : false,
-"url" : "http://flickrtest1.userland.com/"
-]
-]
-]
+ "stat": "ok",
+ "blogs": [
+           "blog": [
+                     [
+                       "id" : 73,
+                       "name" : "Bloxus test",
+                       "needspassword" : true,
+                       "url" : "http://remote.bloxus.com/"
+                     ],
+                     [
+                       "id" : 74,
+                       "name" : "Manila Test",
+                       "needspassword" : false,
+                       "url" : "http://flickrtest1.userland.com/"
+                     ]
+                   ]
+             ]
 ]
 */
 //~~~~~~~~~~~~~~~~~~~~~ корректные ДАННЫЕ ~~~~~~~~~~~~~~~~~~~~~~~
@@ -245,12 +257,17 @@ let parsedJSON : [String:AnyObject] = [
 var jsonString1 = "{ \"stat\": \"ok\", \"blogs\":  [ { \"id\" : 73, \"name\" : \"Bloxus test\", \"needspassword\" : true, \"url\" : \"http://remote.bloxus.com/\" }, { \"id\" : 74, \"name\" : \"Manila Test\", \"needspassword\" : false, \"url\" : \"http://flickrtest1.userland.com/\" } ]  }"
 let jsonData1 = jsonString1.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
 
+//--------- Data for Blogs -------------------
+
+var jsonString2 = "{ \"stat\": \"ok\", \"blogs\": { \"blog\": [ { \"id\" : 73, \"name\" : \"Bloxus test\", \"needspassword\" : true, \"url\" : \"http://remote.bloxus.com/\" }, { \"id\" : 74, \"name\" : \"Manila Test\", \"needspassword\" : false, \"url\" : \"http://flickrtest1.userland.com/\" } ] } }"
+let jsonData2 = jsonString2.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
+
 //~~~~~~~~~~~~~~~~~~~~~~~  МОДЕЛЬ одного Blog ~~~~~~~~~~~~~~~
 //---------------------- String --> NSURL--------
 func toURL(urlString: String) -> NSURL {
     return NSURL(string: urlString)!
 }
-// ----------------------Структура Blog -----------
+// ----------------------Модель Blog -----------
 
 struct Blog: Printable,JSONDecodable  {
     let id: Int
@@ -267,7 +284,7 @@ struct Blog: Printable,JSONDecodable  {
     }
     
     
-    static func decode1(json: JSON) -> Blog? {
+    static func decode(json: JSON) -> Blog? {
         return _JSONParse(json) >>> { d in
             Blog.create
                 <^> d <| "id"
@@ -278,8 +295,7 @@ struct Blog: Printable,JSONDecodable  {
     }
 }
 
-//-------------------- МОДЕЛЬ массива блогов--------
-// ----------------------Структура Blogs -----------
+//-------------------- МОДЕЛЬ массива блогов [Blog]--------
 
 struct Blogs: Printable,JSONDecodable {
     
@@ -298,10 +314,10 @@ struct Blogs: Printable,JSONDecodable {
         return Blogs(blogs: blogs)
     }
     
-    static func decode1(json: JSON) -> Blogs? {
+    static func decode(json: JSON) -> Blogs? {
         return _JSONParse(json) >>> { d in
             Blogs.create
-                <^> d <| "blogs"
+                <^> d <| "blogs" <| "blog"
 
         }
     }
@@ -313,7 +329,7 @@ func getBlogs(jsonOptional: NSData?, callback: (Result<Blogs>) -> ()) {
     let jsonResult = resultFromOptional(jsonOptional, NSError(localizedDescription: " Неверные данные"))
     let user: ()? = jsonResult >>> decodeJSON >>> decodeObject >>> callback
 }
-getBlogs(jsonData1){ user in
+getBlogs(jsonData2){ user in
     let a = stringResult(user)
     println("\(a)")
 }

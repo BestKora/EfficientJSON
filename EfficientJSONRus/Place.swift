@@ -8,35 +8,34 @@
 
 import Foundation
 
+// ---- Модель Place ----
+
 struct Place: Printable ,JSONDecodable {
     let placeURL: String
     let timeZone: String
     let photoCount : String
     let content : String
     
-    
-    var description : String {
-        return "Place { placeURL = \(placeURL), timeZone = \(timeZone), photoCount = \(photoCount),content = \(content)} \n"
+    var description :String {
+      return "Place { placeURL = \(placeURL), timeZone = \(timeZone), photoCount = \(photoCount),content = \(content)} \n"
     }
     
     static func create(placeURL: String)(timeZone: String)(photoCount: String)(content: String) -> Place {
         return Place(placeURL: placeURL, timeZone: timeZone, photoCount: photoCount,content: content)
     }
-
-    static func decode1(json: JSON) -> Place? {  //--------------------decode1
-        return  JSONObject(json) >>> { d in
-
-            Place.create <^>
-                d["place_url"]   >>> JSONString <*>
-                d["timezone"]    >>> JSONString <*>
-                d["photo_count"] >>> JSONString <*>
-                d["_content"]    >>> JSONString
+    static func decode(json: JSON) -> Place? {
+        return _JSONParse(json) >>> { d in
+            Place.create
+                <^> d <| "place_url"
+                <*> d <| "timezone"
+                <*> d <| "photo_count"
+                <*> d <| "_content"
         }
     }
+   
 }
-// ---- Конец структуры Place ----
 
-// ----Структура Places ----
+// ---- Модель Places ----
 
 struct Places: Printable,JSONDecodable {
     
@@ -50,19 +49,32 @@ struct Places: Printable,JSONDecodable {
           return str
         }
     }
-    
-    init(places1: [Place]){
-       self.places = places1
-    }
     static func create(places: [Place]) -> Places {
-        return Places(places1: places)
+        return Places(places: places)
     }
+/* ----- В статье у Chris Eidhof ----
     
-    static func decode1(json: JSON) -> Places? {    
-        return create <*> JSONObject(json) >>> {
+    static func decode(json: JSON) -> Places? {
+        return create <^> JSONObject(json) >>> {
                   dictionary ($0,"places") >>> {
-                        array($0, "place") >>> { flatten($0.map(Place.decode1) )}}}
+                        array($0, "place") >>> { flatten($0.map(Place.decode))
+                        }
+                  }
+        }
+    }
 
+    static func decode(json: JSON) -> Places? {
+        return create <^> JSONObject(json)
+                       |> "places"
+                      ||> "place" >>> {flatten($0.map(Place.decode))}
+    }
+*/
+    static func decode(json: JSON) -> Places? {
+        return _JSONParse(json) >>> { d in
+            Places.create
+                <^> d <| "places" <| "place"
+            
+        }
     }
 }
 // ---- Конец структуры Places----

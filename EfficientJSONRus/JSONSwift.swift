@@ -13,7 +13,8 @@ typealias JSONDictionary = Dictionary<String, JSON>
 typealias JSONArray = Array<JSON>
 
 
-// functions
+//------- JSON functions -----
+/*
 func dictionary(input: JSONDictionary, key: String) ->  JSONDictionary? {
     return input[key] >>> { $0 as? JSONDictionary }
 }
@@ -40,6 +41,7 @@ func JSONObject(object: JSON) -> JSONDictionary? {
 func JSONCollection(object: JSON) -> JSONArray? {
     return object as? JSONArray
 }
+*/
 //------------Functions------------------
 
 public func flatten<A>(array: [A?]) -> [A] {
@@ -55,18 +57,40 @@ public func flatten<A>(array: [A?]) -> [A] {
 public func pure<A>(a: A) -> A? {
     return .Some(a)
 }
+//---------------------------- Универсальный парсер --------
 
 func _JSONParse<A>(json: JSON) -> A? {
     return json as? A
 }
 
-func extract<A>(json: JSONDictionary, key: String) -> A? {
-    return json[key] >>> _JSONParse
+func _JSONParse<A: JSONDecodable>(json: JSON) -> A? {
+    return A.decode(json)
 }
 
-func extractPure<A>(json: JSONDictionary, key: String) -> A?? {
-    return pure(json[key] >>> _JSONParse)
+extension String: JSONDecodable {
+    static func decode(json: JSON) -> String? {
+        return json as? String
+    }
 }
+
+extension Int: JSONDecodable {
+    static func decode(json: JSON) -> Int? {
+        return json as? Int
+    }
+}
+
+extension Double: JSONDecodable {
+    static func decode(json: JSON) -> Double? {
+        return json as? Double
+    }
+}
+
+extension Bool: JSONDecodable {
+    static func decode(json: JSON) -> Bool? {
+        return json as? Bool
+    }
+}
+
 // ----------------operators Optional ----
 
 infix operator >>> { associativity left precedence 150 }
@@ -118,18 +142,27 @@ func resultFromOptional<A>(optional: A?, error: NSError) -> Result<A> {
 //------------------ Протокол  JSONDecodable -----
 
 protocol JSONDecodable {
-    class func decode1(json: JSON) -> Self?
+    class func decode(json: JSON) -> Self?
 }
 
 func decodeObject<A: JSONDecodable>(json: JSON) -> Result<A> {
-    return resultFromOptional(A.decode1(json), NSError(localizedDescription: "Отсутствуют компоненты структуры")) // custom error
+    return resultFromOptional(A.decode(json),
+                       NSError(localizedDescription: "Отсутствуют компоненты Модели"))
+}
+
+//------------- JSON -> A? -------------
+
+func decodeObject<A: JSONDecodable>(json: JSON) -> A? {
+    return A.decode(json)
 }
 
 //------------------ Для Optionals JSON? -----
 
 func decodeJSON(data: NSData?) -> JSON? {
     var jsonErrorOptional: NSError?
-    let jsonOptional: JSON? = NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions(0), error: &jsonErrorOptional)
+    let jsonOptional: JSON? = NSJSONSerialization.JSONObjectWithData(data!,
+                                          options: NSJSONReadingOptions(0),
+                                                 error: &jsonErrorOptional)
     if let json: JSON = jsonOptional {
         return json
     } else {
@@ -140,9 +173,17 @@ func decodeJSON(data: NSData?) -> JSON? {
 //------------------ Для Result<JSON> -----
 
 func decodeJSON(data: NSData) -> Result<JSON> {
-    let jsonOptional: JSON! = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(0), error: nil)
-    return resultFromOptional(jsonOptional,
-                       NSError(localizedDescription: "исходные данные неверны")) // error from NSJSONSerialization
+    var jsonErrorOptional: NSError?
+    let jsonOptional: JSON! = NSJSONSerialization.JSONObjectWithData(data,
+        options: NSJSONReadingOptions(0),
+        error: &jsonErrorOptional)
+    if let err = jsonErrorOptional {
+        return resultFromOptional(jsonOptional,
+            NSError (localizedDescription: err.localizedDescription ))
+    } else {
+        
+        return resultFromOptional(jsonOptional, NSError ())
+    }
 }
 
 // ----------------operators Result<A> ----
@@ -154,6 +195,47 @@ func >>><A, B>(a: Result<A>, f: A -> Result<B>) -> Result<B> {
     }
 }
 //------------------------------------------
+//---------------------Новые операторы --------
+//  Для извлечения словаря
+/*
+infix operator  |> { associativity left precedence 150 }
+func |>(input: [String:AnyObject]?, key: String) ->  [String:AnyObject]? {
+    return input![key] >>> { $0 as? [String:AnyObject] }
+}
+
+//  Для извлечения массива
+
+infix operator  ||> { associativity left precedence 150 }
+func ||>(input: [String:AnyObject]?, key: String) ->  [AnyObject]? {
+    return input![key] >>> { $0 as? [AnyObject] }
+}
+*/
+//-------- Операторы извлечения данных из JSON-------
+
+infix operator <|* { associativity left precedence 150 }
+infix operator <| { associativity left precedence 150 }
+
+func <|<A: JSONDecodable>(d: JSONDictionary, key: String) -> A? {
+    return d[key] >>> _JSONParse
+}
+
+func <|(d: JSONDictionary, key: String) -> JSONDictionary {
+    return d[key] >>> _JSONParse ?? JSONDictionary()
+}
+
+func <|<A: JSONDecodable>(d: JSONDictionary, key: String) -> [A]? {
+    return d[key] >>> _JSONParse >>> { (array: JSONArray) in
+        array.map { _JSONParse($0) } >>> flatten
+    }
+}
+
+func <|*<A: JSONDecodable>(d: JSONDictionary, key: String) -> A?? {
+    return pure(d <| key)
+}
+
+
+
+
 
 
 

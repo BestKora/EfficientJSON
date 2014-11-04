@@ -7,6 +7,8 @@
 //
 //---- по статье http://robots.thoughtbot.com/efficient-json-in-swift-with-functional-concepts-and-generics
 
+// ---------- БУДЬТЕ ВНИМАТЕЛЬНЫ - КОМПИЛИРУЕТСЯ около 1 минуты--------
+
 import UIKit
 
 class ViewController: UITableViewController {
@@ -21,6 +23,7 @@ class ViewController: UITableViewController {
         let urlPlaces  = NSURLRequest( URL: FlickrFetcher.URLforTopPlaces())
   
         performRequest(urlPlaces ) { (places: Result<Places>) in
+         
             switch places {
             case let .Error(err):
                 println ("\(err.localizedDescription)")
@@ -36,11 +39,8 @@ class ViewController: UITableViewController {
             }
         }
     }
-    // MARK: - TableViewDataSource
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1
-    }
+    // MARK: - TableViewDataSource
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cellIdentifier = "PlaceCell"
@@ -71,40 +71,25 @@ class ViewController: UITableViewController {
         
         let jsonString2 = "{  \"id\": 1, \"name\" : \"Cool user\" }"
         let jsonData2: NSData? = jsonString2.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
+
+        //      ----- Тест User - правильные данные -----
+
         getUser4(jsonData1 ){ user in
             println("\(stringResult(user))")
         }
-        //      ----- Тест 1 User1- правильные данные -----
-        
-        getUser5(jsonData1){ user1 in
-            let a = stringResult(user1)
-            println("------ 4--\(a)")
-        }
-        //      ----- Тест 1 User - правильные данные -----
+        //      ----- Тест User - правильные данные -----
         
         getUser6(jsonData2){ user in
             let a = stringResult(user)
             println("User6 ---\(a)")
         }
         
-        
+       //      ----- Тест Blog  -----
         getBlog1(jsonData){ blog in
             println("\(blog)")
         }
         
-        getBlog6(jsonData ){ blog in
-            println("----GetBlog6: \(stringResult(blog))")
-        }
-        
-        getBlog10(jsonData ){ result in
-            for res: Result<Blog> in result {
-                switch res {
-                case let .Error(err):
-                    println("Error: \(err)")
-                case let .Value(box):
-                    println("\(box.value)")}
-            }
-        }
+       //      ----- Тест Blogs  -----        
         getBlog11(jsonData ) { blogs in
             println("BLOGS: \(stringResult(blogs))")
         }

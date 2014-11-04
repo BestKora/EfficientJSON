@@ -4,7 +4,7 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6244"/>
     </dependencies>
     <scenes>
-        <!--Root View Controller-->
+        <!--Places From Flickr.com-->
         <scene sceneID="HDb-bb-d6c">
             <objects>
                 <tableViewController id="r2d-fA-OJT" customClass="ViewController" customModule="EfficientJSONRus" customModuleProvider="target" sceneMemberID="viewController">
@@ -39,7 +39,7 @@
                             <outlet property="delegate" destination="r2d-fA-OJT" id="o0A-6z-saD"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Root View Controller" id="eph-JK-bre"/>
+                    <navigationItem key="navigationItem" title="Places From Flickr.com" id="eph-JK-bre"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GfY-MG-BH1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

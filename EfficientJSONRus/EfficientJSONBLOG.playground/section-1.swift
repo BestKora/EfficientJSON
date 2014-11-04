@@ -86,6 +86,7 @@ func <*><A, B>(f: (A -> B)?, a: A?) -> B? {
     }
     return .None
 }
+
 func resultFromOptional<A>(optional: A?, error: NSError) -> Result<A> {
     if let a = optional {
         return .Value(Box(a))
@@ -104,15 +105,25 @@ extension NSError {
 //------------------ Для Result<JSON> -----
 
 func decodeJSON(data: NSData) -> Result<JSON> {
-    let jsonOptional: JSON! = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(0), error: nil)
-    return resultFromOptional(jsonOptional, NSError(localizedDescription: "исходные данные неверны")) // use the error from NSJSONSerialization or a custom error message
+    var jsonErrorOptional: NSError?
+    let jsonOptional: JSON! = NSJSONSerialization.JSONObjectWithData(data,
+                                         options: NSJSONReadingOptions(0),
+                                                error: &jsonErrorOptional)
+    if let err = jsonErrorOptional {
+        return resultFromOptional(jsonOptional,
+            NSError (localizedDescription: err.localizedDescription ))
+    } else {
+        
+        return resultFromOptional(jsonOptional, NSError ())
+    }
 }
 
 //------------------ Для Optionals JSON? -----
 
 func decodeJSON(data: NSData?) -> JSON? {
-    var jsonErrorOptional: NSError?
-    let jsonOptional: JSON? = NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions(0), error: &jsonErrorOptional)
+    let jsonOptional: JSON? = NSJSONSerialization.JSONObjectWithData(data!,
+                                          options: NSJSONReadingOptions(0),
+                                                                error: nil)
     if let json: JSON = jsonOptional {
         return json
     } else {
@@ -128,54 +139,29 @@ func >>><A, B>(a: Result<A>, f: A -> Result<B>) -> Result<B> {
     case let .Error(error): return .Error(error)
     }
 }
-//---------------- Используем Generic -----------
+//~~~~~~~~~~~~~ Используем Generics ~~~~~~~~~~~~~~~~
 
 protocol JSONDecodable {
-    class func decode1(json: JSON) -> Self?
+    class func decode(json: JSON) -> Self?
 }
+
+//------------ JSON -> Result<A> --------
 
 func decodeObject<A: JSONDecodable>(json: JSON) -> Result<A> {
-    return resultFromOptional(A.decode1(json), NSError(localizedDescription: "Отсутствуют компоненты User1")) // custom error
-}
-//----------------достаем данные из Сети-------------------------
-struct Response {
-    let data: NSData
-    let statusCode: Int = 500
-    
-    init(data: NSData, urlResponse: NSURLResponse) {
-        self.data = data
-        if let httpResponse = urlResponse as? NSHTTPURLResponse {
-            statusCode = httpResponse.statusCode
-        }
-    }
+    return resultFromOptional(A.decode(json),
+          NSError(localizedDescription: "Отсутствуют компоненты Модели"))
 }
 
-func performRequest(request: NSURLRequest, callback: (Result<NSData>) -> ()) {
-    let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { data, urlResponse, error in
-        println("\(error.localizedDescription)")
-        callback(parseResult(data, urlResponse, error))
-    }
-    task.resume()
+//------------- JSON -> A? -------------
+
+func decodeObject<A: JSONDecodable>(json: JSON) -> A? {
+    return A.decode(json)
 }
 
-func parseResult(data: NSData!, urlResponse: NSURLResponse!, error: NSError!) -> Result<NSData> {
-    println("\(error.localizedDescription)")
-    let responseResult: Result<Response> = Result(error, Response(data: data, urlResponse: urlResponse))
-    return responseResult >>> parseResponse
-    
-}
-
-func parseResponse(response: Response) -> Result<NSData> {
-    let successRange = 200..<300
-    if !contains(successRange, response.statusCode) {
-        return .Error(NSError()) // customize the error message to your liking
-    }
-    return Result(nil, response.data)
-}
 //-----------Вынимаем словари и массивы из словарей по ключам --------------
 
 func dictionary(input: JSONDictionary, key: String) ->  JSONDictionary? {
-    return input[key] >>> { $0 as? JSONDictionary } //[String:AnyObject]
+    return input[key] >>> { $0 as? JSONDictionary }
 }
 
 func array(input: JSONDictionary, key: String) ->  JSONArray? {
@@ -215,8 +201,7 @@ final class Box<A> {
     }
 }
 
-//--------------- Для печати Result на Playground ---
-
+//--------------- Для печати Result  ---
 
 func stringResult<A:Printable>(result: Result<A> ) -> String {
     switch result {
@@ -233,13 +218,13 @@ func toURL(urlString: String) -> NSURL {
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~  МОДЕЛЬ одного Blog ~~~~~~~~~~~~~~~
-// ----------------------Структура Blog -----------
 
 struct Blog: Printable,JSONDecodable  {
     let id: Int
     let name: String
     let needsPassword : Bool
     let url: NSURL
+
     var description : String { get {
         return "Blog { id = \(id), name = \(name), needsPassword = \(needsPassword), url = \(url)}"
         }}
@@ -250,32 +235,32 @@ struct Blog: Printable,JSONDecodable  {
     
     static func decode(json: JSON) -> Result<Blog> {
         let blog = JSONObject(json) >>> { dict in
-            Blog.create <^>
-                dict["id"]    >>> JSONInt    <*>
-                dict["name"] >>> JSONString <*>
-                dict["needspassword"] >>> JSONInt <*>
-                dict["url"] >>> JSONString
+            Blog.create
+                <^> dict["id"]   >>> JSONInt
+                <*> dict["name"] >>> JSONString
+                <*> dict["needspassword"] >>> JSONInt
+                <*> dict["url"]  >>> JSONString
         }
         return resultFromOptional(blog, NSError()) // custom error message
     }
-    
-    static func decode1(json: JSON) -> Blog? {
+
+    static func decode(json: JSON) -> Blog? {
         return  JSONObject(json) >>> { dict in
-            Blog.create <^>
-                dict["id"]    >>> JSONInt    <*>
-                dict["name"] >>> JSONString <*>
-                dict["needspassword"] >>> JSONInt <*>
-                dict["url"] >>> JSONString
+            Blog.create
+                <^> dict["id"]   >>> JSONInt
+                <*> dict["name"] >>> JSONString
+                <*> dict["needspassword"] >>> JSONInt
+                <*> dict["url"]  >>> JSONString
         }
     }
 }
 
 //-------------------- МОДЕЛЬ массива блогов--------
-// ----------------------Структура Blogs -----------
 
 struct Blogs: Printable,JSONDecodable {
     
     var blogs : [Blog]?
+    
     var description :String  { get {
         var str: String = ""
         for blog in self.blogs! {
@@ -284,18 +269,15 @@ struct Blogs: Printable,JSONDecodable {
         return str
         }
     }
-    
-    init(blogs1: [Blog]){
-        self.blogs = blogs1
-    }
+
     static func create(blogs: [Blog]) -> Blogs {
-        return Blogs(blogs1: blogs)
+        return Blogs(blogs: blogs)
     }
     
-    static func decode1(json: JSON) -> Blogs? {
+    static func decode(json: JSON) -> Blogs? {
         return create <*> JSONObject(json) >>> {
-            dictionary ($0,"blogs") >>> {
-                array($0, "blog") >>> {flatten($0.map(Blog.decode1))}
+                   dictionary ($0,"blogs") >>> {
+                         array($0, "blog") >>> {flatten($0.map(Blog.decode))}
             }
         }
     }
@@ -384,7 +366,7 @@ func getBlog2(jsonOptional: NSData?, callback: (Result<Blog>) -> ()) {
     callback(.Error(NSError()))
 }
 
-//------------- ТЕСТ 2 ВЫЗОВ ФУНКЦИЙ ПАРСИНГА правильных данных------------
+//------------- ТЕСТ 1  правильных данных------------
 
 println("----- 2:")
 getBlog2(jsonData1 ){ blog in
@@ -401,14 +383,14 @@ func getBlog6(jsonOptional: NSData?, callback: (Result<Blog>) -> ()) {
             if let collection = blogs["blog"] >>> JSONCollection {
                 for blog : AnyObject in collection {
                     let blogInfo:()? = blog >>> JSONObject  >>>
-                        Blog.decode >>> callback
+                                                    Blog.decode >>> callback
                     return
                 }
             }
         }
     }
 }
-//------------- ТЕСТ 6 ВЫЗОВ ФУНКЦИЙ ПАРСИНГА правильных данных----
+//------------- ТЕСТ 1  правильных данных----
 
 println("----- 6:")
 getBlog6(jsonData1 ){ blog in
@@ -420,8 +402,8 @@ getBlog6(jsonData1 ){ blog in
 
 func getBlog11(jsonOptional: NSData?, callback: (Result<Blogs>) -> ()) {
     let jsonResult = resultFromOptional(jsonOptional,
-                                          NSError(localizedDescription: " Неверные данные"))
-    let json: ()? =  jsonResult  >>> decodeJSON  >>> decodeObject >>> callback
+                                          NSError(localizedDescription: "JSON данные неверны"))
+    jsonResult  >>> decodeJSON  >>> decodeObject >>> callback
 }
 
 //------------- ТЕСТ 11 (структура Blogs) правильных данных это КЛАСС!!----

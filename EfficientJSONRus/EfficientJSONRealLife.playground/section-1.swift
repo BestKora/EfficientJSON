@@ -166,6 +166,7 @@ func >>><A, B>(a: Result<A>, f: A -> Result<B>) -> Result<B> {
 }
 
 //~~~~~~~~~ДОБАВЛЯЕМ ФУНКЦИИ  ~~~~~~~~~~~~~~~~~~~
+
 //------- flatten функцию ---
 func flatten<A>(array: [A?]) -> [A] {
     var list: [A] = []
@@ -177,50 +178,24 @@ func flatten<A>(array: [A?]) -> [A] {
     return list
 }
 //-------pure функцию ---
+
 func pure<A>(a: A) -> A? {
     return .Some(a)
 }
 //---------------- Используем Generics -----------
 
 protocol JSONDecodable {
-    class func decode1(json: JSON) -> Self?
+    class func decode(json: JSON) -> Self?
 }
 
 func decodeObject<A: JSONDecodable>(json: JSON) -> Result<A> {
-    return resultFromOptional(A.decode1(json), NSError(localizedDescription: "Отсутствуют компоненты модели")) // custom error
+    return resultFromOptional(A.decode(json), NSError(localizedDescription: "Отсутствуют компоненты модели"))
 }
 
 func _JSONParse<A>(json: JSON) -> A? {
     return json as? A
 }
 
-func _JSONParse<A: JSONDecodable>(json: JSON) -> A? {
-    return A.decode1(json)
-}
-
-extension String: JSONDecodable {
-   static func decode1(json: JSON) -> String? {
-        return json as? String
-    }
-}
-
-extension Int: JSONDecodable {
-    static func decode1(json: JSON) -> Int? {
-        return json as? Int
-    }
-}
-
-extension Double: JSONDecodable {
-   static func decode1(json: JSON) -> Double? {
-        return json as? Double
-    }
-}
-
-extension Bool: JSONDecodable {
-    static func decode1(json: JSON) -> Bool? {
-        return json as? Bool
-    }
-}
 func extract<A>(json: JSONDictionary, key: String) -> A? {
     return json[key] >>> _JSONParse
 }
@@ -233,22 +208,13 @@ func extractPure<A>(json: JSONDictionary, key: String) -> A?? {
 infix operator <| { associativity left precedence 150 }
 infix operator <|* { associativity left precedence 150 }
 
-func <|<A: JSONDecodable>(d: JSONDictionary, key: String) -> A? {
-    return d[key] >>> _JSONParse
+//---------
+func <|<A>(json: JSONDictionary, key: String) -> A? {
+    return json[key] >>> _JSONParse
 }
 
-func <|(d: JSONDictionary, key: String) -> JSONDictionary {
-    return d[key] >>> _JSONParse ?? JSONDictionary()
-}
-
-func <|<A: JSONDecodable>(d: JSONDictionary, key: String) -> [A]? {
-    return d[key] >>> _JSONParse >>> { (array: JSONArray) in
-        array.map { _JSONParse($0) } >>> flatten
-    }
-}
-
-func <|*<A: JSONDecodable>(d: JSONDictionary, key: String) -> A?? {
-    return pure(d <| key)
+func <|*<A>(json: JSONDictionary, key: String) -> A?? {
+    return pure(json[key] >>> _JSONParse)
 }
 //~~~~~~~~~~~~~~~~ МОДЕЛЬ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 struct User: JSONDecodable, Printable {
@@ -266,8 +232,8 @@ struct User: JSONDecodable, Printable {
     }
     
 //---------- ОКОНЧАТЕЛЬНЫЙ ВАРИАНТ -------------
-    
-    static func decode1(json: JSON) -> User? {
+//
+    static func decode(json: JSON) -> User? {
         return _JSONParse(json) >>> { d in
             User.create
                 <^> d <|  "id"
@@ -278,13 +244,13 @@ struct User: JSONDecodable, Printable {
 /*
 //---------- ВАРИАНТ с extract -------------
     
-    static func decode1(json: JSON) -> User? {
+    static func decode(json: JSON) -> User? {
 
            return _JSONParse(json) >>> { d in
-                User.create <^>
-                    extract (d,"id")    <*>
-                    extract (d,"name")  <*>
-                    extractPure (d,"email")
+                User.create
+                    <^> extract (d,"id")
+                    <*> extract (d,"name")
+                    <*> extractPure (d,"email")
             }
     }
 */
@@ -293,7 +259,8 @@ struct User: JSONDecodable, Printable {
 //~~~~~~~~~~~~~~~~~~ User ПАРСИНГ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 func getUser5(jsonOptional: NSData?, callback: (Result<User>) -> ()) {
-    let jsonResult = resultFromOptional(jsonOptional, NSError(localizedDescription: " Неверные данные"))
+    let jsonResult = resultFromOptional(jsonOptional,
+                  NSError(localizedDescription: " Неверные данные"))
     let user: ()? = jsonResult >>> decodeJSON >>> decodeObject >>> callback
 }
 
