@@ -18,13 +18,6 @@ let parsedJSON : [String:AnyObject] =
 // ---------- БУДЬТЕ ВНИМАТЕЛЬНЫ - КОМПИЛИРУЕТСЯ 1.5 -2 минуты--------
 
 
-//------- Исходные правильные данные для парсинга Post -----
-//      ----- Тест 1 - правильные данные  -----
-
-let jsonString: String = "{ \"id\": 5, \"text\":\"This is a post.\",  \"author\": { \"id\": 5, \"name\":\"Cool User\" }}"
-
-let jsonData: NSData? = jsonString.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
-
 //~~~~~~~~~~~~~~~~~~~~~~~ ПАРСИНГ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 typealias JSON = AnyObject
 typealias JSONObject = [String:JSON]
@@ -252,22 +245,18 @@ let parsedJSON : [String:AnyObject] = [
              ]
 ]
 */
-//~~~~~~~~~~~~~~~~~~~~~ корректные ДАННЫЕ ~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~ корректные ДАННЫЕ для Blogs ~~~~~~~~~~~~~~~~~~~~~~~
 
-var jsonString1 = "{ \"stat\": \"ok\", \"blogs\":  [ { \"id\" : 73, \"name\" : \"Bloxus test\", \"needspassword\" : true, \"url\" : \"http://remote.bloxus.com/\" }, { \"id\" : 74, \"name\" : \"Manila Test\", \"needspassword\" : false, \"url\" : \"http://flickrtest1.userland.com/\" } ]  }"
-let jsonData1 = jsonString1.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
+var jsonString = "{ \"stat\": \"ok\", \"blogs\": { \"blog\": [ { \"id\" : 73, \"name\" : \"Bloxus test\", \"needspassword\" : true, \"url\" : \"http://remote.bloxus.com/\" }, { \"id\" : 74, \"name\" : \"Manila Test\", \"needspassword\" : false, \"url\" : \"http://flickrtest1.userland.com/\" } ] } }"
+let jsonData = jsonString.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
 
-//--------- Data for Blogs -------------------
 
-var jsonString2 = "{ \"stat\": \"ok\", \"blogs\": { \"blog\": [ { \"id\" : 73, \"name\" : \"Bloxus test\", \"needspassword\" : true, \"url\" : \"http://remote.bloxus.com/\" }, { \"id\" : 74, \"name\" : \"Manila Test\", \"needspassword\" : false, \"url\" : \"http://flickrtest1.userland.com/\" } ] } }"
-let jsonData2 = jsonString2.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
-
-//~~~~~~~~~~~~~~~~~~~~~~~  МОДЕЛЬ одного Blog ~~~~~~~~~~~~~~~
 //---------------------- String --> NSURL--------
 func toURL(urlString: String) -> NSURL {
     return NSURL(string: urlString)!
 }
-// ----------------------Модель Blog -----------
+
+//~~~~~~~~~~~~~~~~~~~~~~~  МОДЕЛЬ одного Blog ~~~~~~~~~~~~~~~
 
 struct Blog: Printable,JSONDecodable  {
     let id: Int
@@ -322,14 +311,16 @@ struct Blogs: Printable,JSONDecodable {
         }
     }
 }
-// ---- Конец структуры Blogs----
+
 //------------ Тест Blogs -----
 
 func getBlogs(jsonOptional: NSData?, callback: (Result<Blogs>) -> ()) {
-    let jsonResult = resultFromOptional(jsonOptional, NSError(localizedDescription: " Неверные данные"))
+    let jsonResult = resultFromOptional(jsonOptional,
+                       NSError(localizedDescription: " Неверные данные"))
     let user: ()? = jsonResult >>> decodeJSON >>> decodeObject >>> callback
 }
-getBlogs(jsonData2){ user in
+
+getBlogs(jsonData){ user in
     let a = stringResult(user)
     println("\(a)")
 }

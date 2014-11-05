@@ -49,11 +49,6 @@ struct User:  JSONDecodable, Printable {
                 <^> d <| "id"
                 <*> d <| "name"
                 <*> d <|* "email"
-                /*
-                <^> dict["id"]    >>> JSONInt
-                <*> dict["name"]  >>> JSONString
-                <*> pure(dict["email"] >>> JSONString)
-*/
         }
         return resultFromOptional(user, NSError(localizedDescription: "Отсутствуют компоненты User")) // custom error message
     }
